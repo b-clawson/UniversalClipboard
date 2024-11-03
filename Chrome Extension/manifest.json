@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Clipboard Pattern Detector",
+  "version": "1.0",
+  "description": "Detect patterns in clipboard contents and open a search URL in a new tab.",
+  "permissions": ["clipboardRead", "clipboardWrite", "tabs", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Process Clipboard"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
