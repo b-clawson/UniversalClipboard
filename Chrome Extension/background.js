@@ -24,8 +24,8 @@ function sanitizeTextForPhoneNumber(text) {
     return sanitizedText;
 }
 
-async function handleClipboardContents(clipboardContents) {
-    console.log(`Processing clipboard contents: ${clipboardContents}`);
+async function handleClipboardContents(clipboardContents, openOption) {
+    console.log(`Processing clipboard contents: ${clipboardContents} with option: ${openOption}`);
 
     try {
         const sanitizedClipboard = sanitizeTextForPhoneNumber(clipboardContents);
@@ -52,7 +52,19 @@ async function handleClipboardContents(clipboardContents) {
 
         await navigator.clipboard.writeText(searchUrl);
         console.log("Search URL copied to clipboard.");
-        chrome.tabs.create({ url: searchUrl });
+
+        // Open in a new tab or new window based on user choice
+        if (openOption === "tab") {
+            chrome.tabs.create({ url: searchUrl });
+        } else if (openOption === "window") {
+            chrome.windows.create({
+                url: searchUrl,
+                type: "popup",
+                left: screen.availWidth - 400, // Align window to the right
+                width: 400,
+                height: screen.availHeight
+            });
+        }
     } catch (error) {
         console.error("Error in handleClipboardContents:", error);
     }
@@ -62,10 +74,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Message received in background script:", request);
 
     if (request.action === "processClipboard") {
-        handleClipboardContents(request.clipboardText)
+        handleClipboardContents(request.clipboardText, request.openOption)
             .then(() => {
                 console.log("Clipboard processed successfully.");
-                sendResponse({ message: "Search URL generated and opened in a new tab." });
+                sendResponse({ message: "Search URL generated and opened." });
             })
             .catch((error) => {
                 console.error("Error processing clipboard:", error);

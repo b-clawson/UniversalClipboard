@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -19,11 +20,21 @@
             font-size: 16px;
             cursor: pointer;
         }
+        select {
+            width: 100%;
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <h2>Pattern Detector</h2>
     <button id="checkClipboard">Check Clipboard</button>
+    <select id="openOption">
+        <option value="tab">Open in New Tab</option>
+        <option value="window">Open in New Window</option>
+    </select>
     <div id="status">Awaiting input...</div>
 
     <script src="popup.js"></script>
