@@ -1,12 +1,14 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "getClipboardText") {
-        navigator.clipboard.readText().then((text) => {
-            console.log("Clipboard contents read by content script:", text);
-            sendResponse({ clipboardContents: text });
-        }).catch((error) => {
-            console.error("Failed to read clipboard contents:", error);
-            sendResponse({ clipboardContents: null });
+chrome.action.onClicked.addListener(async () => {
+    try {
+        const clipboardContents = await navigator.clipboard.readText();
+        console.log("Clipboard contents read in content script:", clipboardContents);
+
+        // Send clipboard contents to background script
+        chrome.runtime.sendMessage({
+            action: "processClipboard",
+            clipboardContents: clipboardContents
         });
-        return true; // Keep the response channel open for async
+    } catch (error) {
+        console.error("Error reading clipboard in content script:", error);
     }
 });

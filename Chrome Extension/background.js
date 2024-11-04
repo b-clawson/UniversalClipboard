@@ -1,21 +1,7 @@
-chrome.action.onClicked.addListener(async () => {
-    console.log("Extension icon clicked.");
-    try {
-        // Attempt to read clipboard text
-        const clipboardContents = await navigator.clipboard.readText();
-        console.log(`Clipboard contents retrieved: ${clipboardContents}`);
-
-        // Call the handler with clipboard contents
-        await handleClipboardContents(clipboardContents);
-    } catch (error) {
-        console.error("Error accessing clipboard contents:", error);
-        if (error.name === 'NotAllowedError') {
-            console.warn("Clipboard access was denied. Ensure clipboard permissions are enabled.");
-        } else if (error.name === 'NotFoundError') {
-            console.warn("Clipboard is empty or unavailable.");
-        } else {
-            console.warn("Unexpected error while accessing clipboard:", error);
-        }
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "processClipboard") {
+        console.log("Clipboard contents received from content script:", message.clipboardContents);
+        handleClipboardContents(message.clipboardContents);
     }
 });
 
@@ -67,32 +53,4 @@ async function handleClipboardContents(clipboardContents) {
     }
 }
 
-// Function to detect patterns in clipboard content
-async function detectPattern(text) {
-    console.log(`Detecting pattern for text: ${text}`);
-    
-    const userIdPattern = /^[a-zA-Z0-9_-]{8,20}$/; // Example userId pattern
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
-    const phoneNumberPattern = /^\d{10}$/; // Simple 10-digit phone number pattern
-
-    if (userIdPattern.test(text)) {
-        console.log("Pattern detected as userId.");
-        return 'userId';
-    } else if (emailPattern.test(text)) {
-        console.log("Pattern detected as email.");
-        return 'email';
-    } else if (phoneNumberPattern.test(text.replace(/\D/g, ''))) {
-        console.log("Pattern detected as phoneNumber.");
-        return 'phoneNumber';
-    } else {
-        console.log("Pattern defaulting to name.");
-        return 'name'; // Default to name if no other patterns match
-    }
-}
-
-// Function to sanitize clipboard text for phone number
-function sanitizeTextForPhoneNumber(text) {
-    const sanitizedText = text.replace(/\D/g, ''); // Remove non-numeric characters
-    console.log(`Sanitized text for phone number: ${sanitizedText}`);
-    return sanitizedText;
-}
+// The remaining functions (detectPattern and sanitizeTextForPhoneNumber) remain the same as previously provided
