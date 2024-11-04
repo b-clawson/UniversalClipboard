@@ -1,38 +1,28 @@
-async function detectPattern(text) {
-    const patterns = {
-        userId: /^[0-9a-fA-F]{24}$/,
-        email: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        name: /^[A-Za-z]+( [A-Za-z]+)+$/,
-        phoneNumber: /^[0-9]{10}$/
-    };
-
-    console.log("Detecting pattern for text:", text);
-
-    for (let key in patterns) {
-        if (patterns[key].test(text)) {
-            console.log(`Pattern detected: ${key}`);
-            return key;
-        }
+chrome.action.onClicked.addListener(async () => {
+    console.log("Extension icon clicked.");
+    try {
+        const clipboardContents = await navigator.clipboard.readText();
+        console.log(`Clipboard contents retrieved: ${clipboardContents}`);
+        
+        await handleClipboardContents(clipboardContents);
+    } catch (error) {
+        console.error("Error accessing clipboard contents:", error);
     }
-    console.log("No pattern detected.");
-    return null;
-}
+});
 
-function sanitizeTextForPhoneNumber(text) {
-    const sanitizedText = text.replace(/\D/g, '');
-    console.log("Sanitized text for phone number:", sanitizedText);
-    return sanitizedText;
-}
-
-async function handleClipboardContents(clipboardContents, openOption) {
-    console.log(`Processing clipboard contents: ${clipboardContents} with option: ${openOption}`);
+async function handleClipboardContents(clipboardContents) {
+    console.log(`Processing clipboard contents: ${clipboardContents}`);
 
     try {
         const sanitizedClipboard = sanitizeTextForPhoneNumber(clipboardContents);
+        console.log(`Sanitized clipboard content: ${sanitizedClipboard}`);
+
         let searchType, searchTerm;
         const baseUrl = "https://support-dashboard.fetchrewards.com/support/user";
 
         const pattern = await detectPattern(clipboardContents);
+        console.log(`Detected pattern: ${pattern}`);
+
         if (pattern === 'userId') {
             searchType = 'userId';
             searchTerm = clipboardContents;
@@ -43,46 +33,55 @@ async function handleClipboardContents(clipboardContents, openOption) {
             searchType = 'phoneNumber';
             searchTerm = sanitizedClipboard;
         } else {
-            console.log("Unrecognized clipboard content.");
+            console.warn("Unrecognized clipboard content pattern.");
             return;
         }
 
         const searchUrl = `${baseUrl}?searchType=${searchType}&searchTerm=${searchTerm}`;
         console.log(`Generated search URL: ${searchUrl}`);
 
+
         await navigator.clipboard.writeText(searchUrl);
         console.log("Search URL copied to clipboard.");
 
-        // Open in a new tab or new window based on user choice
-        if (openOption === "tab") {
-            chrome.tabs.create({ url: searchUrl });
-        } else if (openOption === "window") {
-            chrome.windows.create({
-                url: searchUrl,
-                type: "popup",
-                left: screen.availWidth - 400, // Align window to the right
-                width: 400,
-                height: screen.availHeight
-            });
-        }
+
+        console.log("Opening search URL in a new window.");
+        chrome.windows.create({
+            url: searchUrl,
+            type: "popup",
+            left: screen.availWidth - 400,
+            width: 400,
+            height: screen.availHeight
+        });
     } catch (error) {
-        console.error("Error in handleClipboardContents:", error);
+        console.error("Error processing clipboard contents:", error);
     }
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("Message received in background script:", request);
+async function detectPattern(text) {
+    console.log(`Detecting pattern for text: ${text}`);
+    
+    const userIdPattern = /^[a-zA-Z0-9_-]{8,20}$/; // Example userId pattern
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+    const phoneNumberPattern = /^\d{10}$/; // Simple 10-digit phone number pattern
 
-    if (request.action === "processClipboard") {
-        handleClipboardContents(request.clipboardText, request.openOption)
-            .then(() => {
-                console.log("Clipboard processed successfully.");
-                sendResponse({ message: "Search URL generated and opened." });
-            })
-            .catch((error) => {
-                console.error("Error processing clipboard:", error);
-                sendResponse({ message: "Error processing clipboard content." });
-            });
-        return true; // Keeps the message channel open for async response
+    if (userIdPattern.test(text)) {
+        console.log("Pattern detected as userId.");
+        return 'userId';
+    } else if (emailPattern.test(text)) {
+        console.log("Pattern detected as email.");
+        return 'email';
+    } else if (phoneNumberPattern.test(text.replace(/\D/g, ''))) {
+        console.log("Pattern detected as phoneNumber.");
+        return 'phoneNumber';
+    } else {
+        console.log("Pattern defaulting to name.");
+        return 'name'; 
     }
-});
+}
+
+function sanitizeTextForPhoneNumber(text) {
+    const sanitizedText = text.replace(/\D/g, '');
+    console.log(`Sanitized text for phone number: ${sanitizedText}`);
+    return sanitizedText;
+}
