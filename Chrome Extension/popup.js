@@ -1,23 +1,22 @@
-document.getElementById("checkClipboard").addEventListener("click", async () => {
+document.getElementById("searchButton").addEventListener("click", () => {
     const status = document.getElementById("status");
-    const openOption = document.getElementById("openOption").value; // Get user selection
-    status.textContent = "Checking clipboard...";
+    const inputField = document.getElementById("inputField").value.trim();
 
-    try {
-        console.log("Attempting to read clipboard...");
-        const clipboardText = await navigator.clipboard.readText();
-        console.log("Clipboard text retrieved:", clipboardText);
-
-        chrome.runtime.sendMessage({ action: "processClipboard", clipboardText, openOption }, (response) => {
+    if (inputField) {
+        console.log("Search term entered:", inputField);
+        chrome.runtime.sendMessage({
+            action: "processClipboard",
+            clipboardContents: inputField
+        }, (response) => {
             console.log("Response from background script:", response);
             if (response && response.message) {
                 status.textContent = response.message;
             } else {
-                status.textContent = "Unrecognized clipboard content.";
+                status.textContent = "Search completed.";
             }
         });
-    } catch (error) {
-        console.error("Failed to read clipboard:", error);
-        status.textContent = "Failed to read clipboard.";
+        status.textContent = "Search initiated...";
+    } else {
+        status.textContent = "Please enter a valid search term.";
     }
 });

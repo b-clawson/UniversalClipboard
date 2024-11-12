@@ -1,16 +1,17 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "processClipboard") {
-        console.log("Clipboard contents received from content script:", message.clipboardContents);
+        console.log("Search term received from popup:", message.clipboardContents);
         handleClipboardContents(message.clipboardContents);
+        sendResponse({ message: "Search term processed successfully." });
     }
 });
 
 async function handleClipboardContents(clipboardContents) {
-    console.log(`Processing clipboard contents: ${clipboardContents}`);
+    console.log(`Processing input: ${clipboardContents}`);
 
     try {
         const sanitizedClipboard = sanitizeTextForPhoneNumber(clipboardContents);
-        console.log(`Sanitized clipboard content: ${sanitizedClipboard}`);
+        console.log(`Sanitized input: ${sanitizedClipboard}`);
 
         let searchType, searchTerm;
         const baseUrl = "https://support-dashboard.fetchrewards.com/support/user";
@@ -28,7 +29,7 @@ async function handleClipboardContents(clipboardContents) {
             searchType = 'phoneNumber';
             searchTerm = sanitizedClipboard;
         } else {
-            console.warn("Unrecognized clipboard content pattern.");
+            console.warn("Unrecognized input pattern.");
             return;
         }
 
@@ -49,8 +50,8 @@ async function handleClipboardContents(clipboardContents) {
             height: screen.availHeight
         });
     } catch (error) {
-        console.error("Error processing clipboard contents:", error);
+        console.error("Error processing input:", error);
     }
 }
 
-// The remaining functions (detectPattern and sanitizeTextForPhoneNumber) remain the same as previously provided
+// The functions detectPattern and sanitizeTextForPhoneNumber remain unchanged and should be included as they are.

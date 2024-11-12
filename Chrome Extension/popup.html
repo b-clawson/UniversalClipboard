@@ -8,11 +8,17 @@
         body {
             font-family: Arial, sans-serif;
             padding: 10px;
-            width: 200px;
+            width: 250px;
         }
         #status {
             margin-top: 10px;
             color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
         button {
             width: 100%;
@@ -20,21 +26,12 @@
             font-size: 16px;
             cursor: pointer;
         }
-        select {
-            width: 100%;
-            margin-top: 10px;
-            padding: 5px;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
     <h2>Pattern Detector</h2>
-    <button id="checkClipboard">Check Clipboard</button>
-    <select id="openOption">
-        <option value="tab">Open in New Tab</option>
-        <option value="window">Open in New Window</option>
-    </select>
+    <input type="text" id="inputField" placeholder="Enter search term" />
+    <button id="searchButton">Search</button>
     <div id="status">Awaiting input...</div>
 
     <script src="popup.js"></script>
